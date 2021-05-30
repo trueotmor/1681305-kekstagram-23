@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм»
 
-* Студент: [Sasha Proskurin](https://up.htmlacademy.ru/javascript/23/user/1681305).
-* Наставник: `Неизвестно`.
+* Студент: [Александр Проскурин](https://up.htmlacademy.ru/javascript/23/user/1681305).
+* Наставник: [Алексей Толстоног](https://up.htmlacademy.ru/javascript/23/user/620625).
 
 ---
 
