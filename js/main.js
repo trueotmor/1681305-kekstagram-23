@@ -16,7 +16,8 @@ function randomInteger (min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-randomInteger (50, 100);
+console.log(randomInteger (50, 1100));
+
 
 
 
@@ -50,7 +51,7 @@ function randomFloat (min, max, precision) {
   return randomInteger(min * factor, max * factor) / factor;
   }
 
-randomFloat (50, 100, 5);
+console.log(randomFloat (500, 1000, 2));
 
 
 
