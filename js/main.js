@@ -39,11 +39,18 @@ function getRandomFloat (min, max, precision) {
   return getRandomInteger(Math.round(min * factor), Math.round(max * factor)) / factor;
 }
 
+getRandomFloat(1, 2, 3);
 
-function getRndArr(anyArray) {
+function getRndArr(anyArray, maxLength) {
   const resultArray = [];
-  const lengthOfArray = getRandomInteger(1, anyArray.length);
-  while (resultArray.length < lengthOfArray) {
+
+  if (maxLength === undefined) {
+    maxLength = anyArray.length;
+  }
+  if (maxLength > 1) {
+    maxLength = getRandomInteger(1, maxLength);
+  }
+  while (resultArray.length < maxLength) {
     const elementRndIndex = getRandomInteger(0, anyArray.length -1);
     const randomElement = anyArray[elementRndIndex];
 
@@ -54,59 +61,58 @@ function getRndArr(anyArray) {
   return resultArray;
 }
 
+function getUniqueId (anyArray, limit, offset) {
+  offset = offset || 1;
+  let uniqueId = getRandomInteger(offset, limit);
+  if (anyArray.includes(uniqueId)) {
+    uniqueId = getUniqueId(anyArray, limit, offset);
+  }
+  return uniqueId;
+}
 
-const createAd = () => {
+let photoDescriptionTotalCount = 1;
+const commentsIdArray = [];
+const createPhotoDescription = () => {
 
-  const getAvatarRng = getRandomInteger(1, 10).toLocaleString('ru-RU',{
-    style: 'decimal',
-    minimumIntegerDigits: 2,
-    useGrouping: false,
-  });
-
-  const  RND_AVATAR = `img/avatars/user${getAvatarRng}.png`;
-
-  const TYPE = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
-  const getRandomTypeIndex = [getRandomInteger(0, TYPE.length -1)];
-
-  const CHECK_TIMES = ['12:00', '13:00', '14:00'];
-  const getRandomCheckIndex = [getRandomInteger(0, CHECK_TIMES.length -1)];
-
-  const FEATURES = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
-
-  const PHOTOS = [
-    'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/duonguyen-8LrGtIxxa4w.jpg',
-    'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/brandon-hoogenboom-SNxQGWxZQi0.jpg',
-    'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/claire-rendall-b6kAwr1i0Iw.jpg',
+  const RANDOM_MESSAGE = [
+    'Всё отлично!',
+    'В целом всё неплохо. Но не всё.',
+    'Когда вы делаете фотографию, хорошо бы убирать палец из кадра. В конце концов это просто непрофессионально.',
+    'Моя бабушка случайно чихнула с фотоаппаратом в руках и у неё получилась фотография лучше.',
+    'Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.',
+    'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!',
   ];
 
-  const LOCATION_LAT = getRandomFloat(35.65000, 35.7000, 5);
-  const LOCATION_LNG = getRandomFloat(139.70000, 139.80000, 5);
+  const RANDOM_NAME = [
+    'Гарфилд', 'Том', 'Гудвин', 'Рокки', 'Ленивец', 'Пушок', 'Спорти', 'Бегемот', 'Пират', 'Гудини', 'Зорро', 'Саймон', 'Альбус', 'Базилио', 'Леопольд', 'Нарцисс',
+  ];
 
+  const commentsIdArrayNumber = getUniqueId (commentsIdArray, 99999);
 
-  return {
-    author: {
-      avatar: RND_AVATAR,
-    },
-    offer: {
-      title: 'Заголовок',
-      address: `${LOCATION_LAT} ${LOCATION_LNG}`,
-      price: getRandomInteger(0, 99999),
-      type: TYPE[getRandomTypeIndex],
-      rooms: getRandomInteger(1, 5),
-      guests: getRandomInteger(1, 10),
-      checkin: CHECK_TIMES[getRandomCheckIndex],
-      checkout: CHECK_TIMES[getRandomCheckIndex],
-      features: getRndArr(FEATURES),
-      description: 'Описание помещения',
-      photos: getRndArr(PHOTOS),
-    },
-    location: {
-      lat: LOCATION_LAT,
-      lng: LOCATION_LNG,
+  const messageObject = {
+    id: photoDescriptionTotalCount,
+    url: `photos/${photoDescriptionTotalCount}.jpg`,
+    description: 'Описание фотографии',
+    likes: getRandomInteger(15, 200),
+
+    comments: {
+      id: commentsIdArrayNumber,
+      avatar: `img/avatar-${getRandomInteger(1, 6)}.svg`,
+      message: getRndArr(RANDOM_MESSAGE, 3),
+      name: getRndArr(RANDOM_NAME, 1),
     },
   };
+
+  photoDescriptionTotalCount += 1;
+  commentsIdArray.push(commentsIdArrayNumber);
+
+  return messageObject;
 };
 
-createAd();
+const DESCRIPTION_COUNT = 25;
 
-// console.log(createAd());
+const photoDescription = new Array(DESCRIPTION_COUNT).fill(null).map(() => createPhotoDescription());
+
+photoDescription;
+
+// console.log(photoDescription);
