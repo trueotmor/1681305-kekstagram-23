@@ -98,8 +98,8 @@ const createPhotoDescription = () => {
     comments: {
       id: commentsIdArrayNumber,
       avatar: `img/avatar-${getRandomInteger(1, 6)}.svg`,
-      message: getRndArr(RANDOM_MESSAGE, 3),
-      name: getRndArr(RANDOM_NAME, 1),
+      message: (getRndArr(RANDOM_MESSAGE, 3)).join(' '),
+      name: getRndArr(RANDOM_NAME, 2).toString(),
     },
   };
 
