@@ -29,7 +29,24 @@ const createPhotoDescription = () => {
 
   const MAX_NAMES_NUMBER = 2;
 
+  const MIN_COMMENTS_NUMBER = 1;
+  const MAX_COMMENTS_NUMBER = 10;
+
   const commentsIdArrayNumber = getUniqueId (commentsIdentifiers, MAX_COMMENT_IDENTIFIER);
+  const commentsCount = getRandomInteger(MIN_COMMENTS_NUMBER, MAX_COMMENTS_NUMBER);
+
+  const getComments = function (count){
+    const comments = [];
+    for (let idx = 0; idx < count; idx++){
+      comments[idx] = {
+        id: commentsIdArrayNumber,
+        avatar: `img/avatar-${getRandomInteger(MIN_AVATAR_NUMBER, MAX_AVATAR_NUMBER)}.svg`,
+        message: (getRndArr(RANDOM_MESSAGES, MAX_MESSAGES_NUMBER)).join(' '),
+        name: getRndArr(RANDOM_NAMES, MAX_NAMES_NUMBER).toString(),
+      };
+    }
+    return comments;
+  };
 
   const messageObject = {
     id: photoDescriptionTotalCount,
@@ -37,12 +54,7 @@ const createPhotoDescription = () => {
     description: 'Описание фотографии',
     likes: getRandomInteger(MIN_LIKES_NUMBER, MAX_LIKES_NUMBER),
 
-    comments: {
-      id: commentsIdArrayNumber,
-      avatar: `img/avatar-${getRandomInteger(MIN_AVATAR_NUMBER, MAX_AVATAR_NUMBER)}.svg`,
-      message: (getRndArr(RANDOM_MESSAGES, MAX_MESSAGES_NUMBER)).join(' '),
-      name: getRndArr(RANDOM_NAMES, MAX_NAMES_NUMBER).toString(),
-    },
+    comments: getComments(commentsCount),
   };
 
   photoDescriptionTotalCount += 1;
