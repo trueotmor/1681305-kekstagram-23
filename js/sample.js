@@ -1,11 +1,12 @@
 import {photo} from './data.js';
 
+
 const sampleTemplate = document.querySelector('#picture').content;
 
 const picturesContainer = document.querySelector('.pictures');
 
-
-const photos = photo(25);
+const MAX_PHOTOS_COUNT = 25; // Введите желаемое количество фото
+const photos = photo(MAX_PHOTOS_COUNT);
 
 const fragment = document.createDocumentFragment();
 
@@ -18,3 +19,5 @@ for (let idx = 0; idx < photos.length; idx++) {
 }
 
 picturesContainer.appendChild(fragment);
+
+export {photos};
