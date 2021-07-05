@@ -1,4 +1,3 @@
-import {photo} from './data.js';
-
-photo(25); // Введите желаемое количество фото
-// console.log(photo(21));
+import './data.js';
+import './sample.js';
+import './fullsize.js';
