@@ -1,4 +1,4 @@
-
+import { isEscEvent } from './util.js';
 
 const getBigPicture = function (picture) {
   const bigPicture = document.querySelector('.big-picture');
@@ -11,20 +11,28 @@ const getBigPicture = function (picture) {
     </li>`).join('');
   socialComments.innerHTML = newComment;
 
-  function closePopupEvents () {
+
+  const onPopupEscKeyDown = (evt)=> {
+    if (isEscEvent(evt)){
+      evt.preventDefault();
+      // eslint-disable-next-line no-use-before-define
+      closeBigPicture();
+    }
+  };
+
+  function closeBigPicture(){
     bigPicture.classList.add('hidden');
     document.querySelector('body').classList.remove('modal-open');
+    document.removeEventListener('keydown', onPopupEscKeyDown, {once:true});
   }
 
   bigPictureClose.addEventListener('click', ()=> {
-    closePopupEvents();
-  });
+    bigPicture.classList.add('hidden');
+    document.querySelector('body').classList.remove('modal-open');
+    closeBigPicture();
+  }, {once:true});
 
-  document.addEventListener('keydown', (evt) => {
-    if (evt.key === 'Escape') {
-      closePopupEvents();
-    }
-  });
+  document.addEventListener('keydown', onPopupEscKeyDown, {once:true});
 
   bigPicture.classList.remove('hidden');
   bigPicture.querySelector('.social__comment-count').classList.add('hidden');

@@ -63,5 +63,7 @@ function getUniqueId (anyArray, limit, offset) {
   return uniqueId;
 }
 
-export {getRandomInteger, getRandomFloat, getRndArr, getUniqueId};
+const isEscEvent = (evt) => evt.key === 'Escape' || evt.key === 'Esc';
+
+export {getRandomInteger, getRandomFloat, getRndArr, getUniqueId, isEscEvent};
 
