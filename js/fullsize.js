@@ -5,6 +5,8 @@ const getBigPicture = function (picture) {
   const bigPictureClose = bigPicture.querySelector('.big-picture__cancel');
   const socialComments = document.querySelector('.social__comments');
   const comments = picture.comments;
+  const showMore = bigPicture.querySelector('.social__comments-loader');
+
   const newComment = comments.map( (comment) => `<li class="social__comment">
     <img class="social__picture" src='${comment.avatar}' width="35" height="35">
     <p class="social__text"> '${comment.message}' </p>
@@ -35,8 +37,8 @@ const getBigPicture = function (picture) {
   document.addEventListener('keydown', onPopupEscKeyDown, {once:true});
 
   bigPicture.classList.remove('hidden');
-  bigPicture.querySelector('.social__comment-count').classList.add('hidden');
-  bigPicture.querySelector('.comments-loader').classList.add('hidden');
+  // bigPicture.querySelector('.social__comment-count').classList.add('hidden');
+  // bigPicture.querySelector('.comments-loader').classList.add('hidden');
   document.querySelector('body').classList.add('modal-open');
   bigPicture.querySelector('.big-picture__img img').setAttribute('src', picture.url);
   bigPicture.querySelector('.likes-count').textContent = picture.likes;
