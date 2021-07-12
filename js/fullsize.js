@@ -6,13 +6,22 @@ const getBigPicture = function (picture) {
   const socialComments = document.querySelector('.social__comments');
   const comments = picture.comments;
   const showMore = bigPicture.querySelector('.social__comments-loader');
+  socialComments.innerHTML = '';
 
-  const newComment = comments.map( (comment) => `<li class="social__comment">
+
+  const render = function (){
+    const renderComments = bigPicture.querySelectorAll('.social__comment').length;
+    const newComment = comments.slice(renderComments, renderComments+5).map( (comment) => `<li class="social__comment">
     <img class="social__picture" src='${comment.avatar}' width="35" height="35">
     <p class="social__text"> '${comment.message}' </p>
     </li>`).join('');
-  socialComments.innerHTML = newComment;
+    socialComments.insertAdjacentHTML('beforeend', newComment);
+  };
+  render();
 
+  showMore.addEventListener('click', ()=>{
+    render();
+  });
 
   const onPopupEscKeyDown = (evt)=> {
     if (isEscEvent(evt)){
