@@ -6,8 +6,6 @@ const getBigPicture = function (picture) {
   const socialComments = document.querySelector('.social__comments');
   const comments = picture.comments;
   const showMore = bigPicture.querySelector('.social__comments-loader');
-  // bigPicture.querySelector('.comments-count').textContent = picture.comments.length;
-  // console.log(commentCount.textContent);
   socialComments.innerHTML = '';
 
 
