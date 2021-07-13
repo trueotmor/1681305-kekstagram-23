@@ -3,7 +3,6 @@ import { isEscEvent } from './util.js';
 const  imageSelect = document.querySelector('#upload-file');
 const form = document.querySelector('.img-upload__form');
 const hashTagInput = form.querySelector('.text__hashtags');
-// const hashTagSubmit = form.querySelector('.img-upload__submit');
 const hashTagComment = form.querySelector('.text__description');
 imageSelect.addEventListener('change', () =>{
   document.querySelector('body').classList.add('modal-open');

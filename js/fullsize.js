@@ -6,13 +6,21 @@ const getBigPicture = function (picture) {
   const socialComments = document.querySelector('.social__comments');
   const comments = picture.comments;
   const showMore = bigPicture.querySelector('.social__comments-loader');
+  socialComments.innerHTML = '';
 
-  const newComment = comments.map( (comment) => `<li class="social__comment">
+
+  const render = function (){
+    let renderComments = bigPicture.querySelectorAll('.social__comment').length;
+    const newComment = comments.slice(renderComments, renderComments+5).map( (comment) => `<li class="social__comment">
     <img class="social__picture" src='${comment.avatar}' width="35" height="35">
     <p class="social__text"> '${comment.message}' </p>
     </li>`).join('');
-  socialComments.innerHTML = newComment;
-
+    socialComments.insertAdjacentHTML('beforeend', newComment);
+    renderComments = bigPicture.querySelectorAll('.social__comment').length;
+    bigPicture.querySelector('.social__comment-count').innerHTML = `${renderComments} из <span class="comments-count">${picture.comments.length}</span> комментариев`;
+  };
+  render();
+  showMore.addEventListener('click', render);
 
   const onPopupEscKeyDown = (evt)=> {
     if (isEscEvent(evt)){
@@ -26,6 +34,7 @@ const getBigPicture = function (picture) {
     bigPicture.classList.add('hidden');
     document.querySelector('body').classList.remove('modal-open');
     document.removeEventListener('keydown', onPopupEscKeyDown, {once:true});
+    showMore.removeEventListener('click', render);
   }
 
   bigPictureClose.addEventListener('click', ()=> {
@@ -37,12 +46,9 @@ const getBigPicture = function (picture) {
   document.addEventListener('keydown', onPopupEscKeyDown, {once:true});
 
   bigPicture.classList.remove('hidden');
-  // bigPicture.querySelector('.social__comment-count').classList.add('hidden');
-  // bigPicture.querySelector('.comments-loader').classList.add('hidden');
   document.querySelector('body').classList.add('modal-open');
   bigPicture.querySelector('.big-picture__img img').setAttribute('src', picture.url);
   bigPicture.querySelector('.likes-count').textContent = picture.likes;
-  bigPicture.querySelector('.comments-count').textContent = picture.comments.length;
   bigPicture.querySelector('.social__caption').textContent = picture.description;
 };
 
