@@ -1,12 +1,169 @@
 import { isEscEvent } from './util.js';
 
-const  imageSelect = document.querySelector('#upload-file');
+const imageSelect = document.querySelector('#upload-file');
 const form = document.querySelector('.img-upload__form');
 const hashTagInput = form.querySelector('.text__hashtags');
 const hashTagComment = form.querySelector('.text__description');
+const picture =form.querySelector('.img-upload__preview');
+
+const scaleSmaller = form.querySelector('.scale__control--smaller');
+const scaleBigger = form.querySelector('.scale__control--bigger');
+const scaleValue = form.querySelector('.scale__control--value');
+
+const effectSelectors = document.querySelectorAll('.effects__item input');
+const defaultEffectSelector = document.querySelector('.effects__item input[value="none"]');
+
+const sliderBar = form.querySelector('.img-upload__effect-level');
+
+const sliderElement = document.querySelector('.effect-level__slider');
+const valueElement = document.querySelector('.effect-level__value');
+
+
+// Транформация изображения
+const scale = () => {
+  const defaultScaleNumber = 100;
+  const pictureTransform = function (){
+    picture.style.transform = `scale(${parseInt(scaleValue.value, 10)*.01})`;
+  };
+  const setScaleValue = function(scaleNumber){
+    if(scaleNumber < 25 ){scaleNumber = 25;}
+    if(scaleNumber > 100 ){scaleNumber = 100;}
+    scaleValue.value = `${scaleNumber}%`;
+    scaleSmaller.style.pointerEvents = 'auto';
+    scaleBigger.style.pointerEvents = 'auto';
+    if(scaleNumber === 25){
+      scaleSmaller.style.pointerEvents = 'none';
+    }
+    if(scaleNumber === 100){
+      scaleBigger.style.pointerEvents = 'none';
+    }
+  };
+  setScaleValue(defaultScaleNumber);
+  picture.style.transform = 'scale(1)';
+  scaleSmaller.addEventListener('click', ()=> {
+    setScaleValue(parseInt(scaleValue.value, 10) - 25);
+    pictureTransform();
+  });
+  scaleBigger.addEventListener('click', ()=> {
+    setScaleValue(parseInt(scaleValue.value, 10) + 25);
+    pictureTransform();
+  });
+};
+// Применение эффектов
+const setEffect = function(evt ){
+
+  sliderBar.style.display = 'block';
+  const re = /effects__preview--[\w-]+/g;
+  const resetPictureClassName = picture.className.replace(re, '');
+  picture.className = resetPictureClassName;
+  picture.classList.add(`effects__preview--${evt.target.value}`);
+
+  if(sliderElement.noUiSlider !== undefined){
+    sliderElement.noUiSlider.destroy();
+  }
+
+
+  let sliderElementsOptions = null;
+  let sliderUpdateOptions = null;
+
+  switch (evt.target.value) {
+    case 'chrome':
+      sliderElementsOptions = {
+        range: {
+          min:0,
+          max:1,
+        },
+        start:1,
+        step: .1,
+        connect: 'lower',
+      };
+      sliderUpdateOptions = function(_, handle, unencoded){
+        valueElement.value = unencoded[handle];
+        picture.style.filter = `grayscale(${valueElement.value})`;
+      };
+      break;
+    case 'sepia':
+      sliderElementsOptions = {
+        range: {
+          min:0,
+          max:1,
+        },
+        start:1,
+        step: .1,
+        connect: 'lower',
+      };
+      sliderUpdateOptions = function(_, handle, unencoded){
+        valueElement.value = unencoded[handle];
+        picture.style.filter = `sepia(${valueElement.value})`;
+      };
+      break;
+    case 'marvin':
+      sliderElementsOptions = {
+        range: {
+          min:0,
+          max:100,
+        },
+        start:100,
+        step: 1,
+        connect: 'lower',
+      };
+      sliderUpdateOptions = function(_, handle, unencoded){
+        valueElement.value = unencoded[handle];
+        picture.style.filter = `invert(${valueElement.value}%)`;
+      };
+      break;
+    case 'phobos':
+      sliderElementsOptions = {
+        range: {
+          min:0,
+          max:3,
+        },
+        start:3,
+        step: .1,
+        connect: 'lower',
+      };
+      sliderUpdateOptions = function(_, handle, unencoded){
+        valueElement.value = unencoded[handle];
+        picture.style.filter = `blur(${valueElement.value}px)`;
+      };
+      break;
+    case 'heat':
+      sliderElementsOptions = {
+        range: {
+          min:1,
+          max:3,
+        },
+        start:3,
+        step: .1,
+        connect: 'lower',
+      };
+      sliderUpdateOptions = function(_, handle, unencoded){
+        valueElement.value = unencoded[handle];
+        picture.style.filter = `brightness(${valueElement.value})`;
+      };
+      break;
+    default:
+      sliderBar.style.display = 'none';
+      picture.style.filter = 'none';
+  }
+
+  if(sliderElementsOptions !== null){
+
+    noUiSlider.create(sliderElement, sliderElementsOptions);
+    sliderElement.noUiSlider.on('update', sliderUpdateOptions);
+  }
+};
+
+sliderBar.style.display = 'none';
+for(let idx = 0; idx < effectSelectors.length; idx++ ){
+  effectSelectors[idx].addEventListener('change', setEffect);
+}
+
 imageSelect.addEventListener('change', () =>{
   document.querySelector('body').classList.add('modal-open');
   document.querySelector('.img-upload__overlay').classList.remove('hidden');
+  scale();
+  defaultEffectSelector.checked = true;
   function closeForm(){
     document.querySelector('body').classList.remove('modal-open');
     document.querySelector('.img-upload__overlay').classList.add('hidden');
@@ -91,4 +248,3 @@ hashTagInput.addEventListener('input', (evt) =>{
     }
   }
 });
-

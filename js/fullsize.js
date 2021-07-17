@@ -10,6 +10,7 @@ const getBigPicture = function (picture) {
 
 
   const render = function (){
+    showMore.classList.remove('visually-hidden');
     let renderComments = bigPicture.querySelectorAll('.social__comment').length;
     const newComment = comments.slice(renderComments, renderComments+5).map( (comment) => `<li class="social__comment">
     <img class="social__picture" src='${comment.avatar}' width="35" height="35">
@@ -18,6 +19,9 @@ const getBigPicture = function (picture) {
     socialComments.insertAdjacentHTML('beforeend', newComment);
     renderComments = bigPicture.querySelectorAll('.social__comment').length;
     bigPicture.querySelector('.social__comment-count').innerHTML = `${renderComments} из <span class="comments-count">${picture.comments.length}</span> комментариев`;
+    if (renderComments === picture.comments.length) {
+      showMore.classList.add('visually-hidden');
+    }
   };
   render();
   showMore.addEventListener('click', render);
