@@ -34,15 +34,23 @@ function getRandomFloat (min, max, precision) {
 
 getRandomFloat(1, 2, 3);
 
-function getRndArr(anyArray, maxLength) {
+function getRndArr(anyArray, maxLength, minLength) {
   const resultArray = [];
 
   if (maxLength === undefined) {
     maxLength = anyArray.length;
   }
-  if (maxLength > 1) {
-    maxLength = getRandomInteger(1, maxLength);
+  if (minLength === undefined) {
+    minLength = 1;
   }
+  if (maxLength > 1) {
+    if (minLength < maxLength){
+      maxLength = getRandomInteger(minLength, maxLength);
+    } else {
+      maxLength = minLength;
+    }
+  }
+
   while (resultArray.length < maxLength) {
     const elementRndIndex = getRandomInteger(0, anyArray.length -1);
     const randomElement = anyArray[elementRndIndex];
