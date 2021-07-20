@@ -1,4 +1,5 @@
-import { isEscEvent } from './util.js';
+import { isEscEvent} from './util.js';
+import { createFetch } from './create-fetch.js';
 
 const imageSelect = document.querySelector('#upload-file');
 const form = document.querySelector('.img-upload__form');
@@ -6,6 +7,7 @@ const hashTagInput = form.querySelector('.text__hashtags');
 const hashTagComment = form.querySelector('.text__description');
 const picture =form.querySelector('.img-upload__preview');
 
+const defaultScaleNumber = 100;
 const scaleSmaller = form.querySelector('.scale__control--smaller');
 const scaleBigger = form.querySelector('.scale__control--bigger');
 const scaleValue = form.querySelector('.scale__control--value');
@@ -18,45 +20,86 @@ const sliderBar = form.querySelector('.img-upload__effect-level');
 const sliderElement = document.querySelector('.effect-level__slider');
 const valueElement = document.querySelector('.effect-level__value');
 
+const errorMessage = document.querySelector('#error').content;
+const successMessage = document.querySelector('#success').content;
+
+const showMessagePopup = function (messageTemplate){
+  const element = document.createElement('div');
+  element.append(messageTemplate.cloneNode(true));
+  document.querySelector('body').append(element);
+  const messageWindow = element.firstElementChild;
+  const close = element.querySelector('button');
+
+  const removeMessageWindow = (evt)=> {
+    const messageWindowInner = messageWindow.firstElementChild;
+    if(!messageWindowInner.contains(evt.target)){
+      messageWindow.remove();
+      // eslint-disable-next-line no-use-before-define
+      closePopup();
+    }
+  };
+
+  const removeMessageWindowByEsc = (evt)=>{
+    if (isEscEvent(evt)){
+      messageWindow.remove();
+      // eslint-disable-next-line no-use-before-define
+      closePopup();
+    }
+  };
+
+  close.addEventListener('click', ()=> {
+    messageWindow.remove();
+    // eslint-disable-next-line no-use-before-define
+    closePopup();
+  });
+  document.addEventListener('keydown', removeMessageWindowByEsc);
+  document.addEventListener('click', removeMessageWindow);
+
+  function closePopup(){
+    document.removeEventListener('click', removeMessageWindow);
+    document.removeEventListener('keydown', removeMessageWindowByEsc);
+  }
+};
+
 
 // Транформация изображения
-const scale = () => {
-  const defaultScaleNumber = 100;
-  const pictureTransform = function (){
-    picture.style.transform = `scale(${parseInt(scaleValue.value, 10)*.01})`;
-  };
-  const setScaleValue = function(scaleNumber){
-    if(scaleNumber < 25 ){scaleNumber = 25;}
-    if(scaleNumber > 100 ){scaleNumber = 100;}
-    scaleValue.value = `${scaleNumber}%`;
-    scaleSmaller.style.pointerEvents = 'auto';
-    scaleBigger.style.pointerEvents = 'auto';
-    if(scaleNumber === 25){
-      scaleSmaller.style.pointerEvents = 'none';
-    }
-    if(scaleNumber === 100){
-      scaleBigger.style.pointerEvents = 'none';
-    }
-  };
-  setScaleValue(defaultScaleNumber);
-  picture.style.transform = 'scale(1)';
-  scaleSmaller.addEventListener('click', ()=> {
-    setScaleValue(parseInt(scaleValue.value, 10) - 25);
-    pictureTransform();
-  });
-  scaleBigger.addEventListener('click', ()=> {
-    setScaleValue(parseInt(scaleValue.value, 10) + 25);
-    pictureTransform();
-  });
+const pictureTransform = function (){
+  picture.style.transform = `scale(${parseInt(scaleValue.value, 10)*.01})`;
 };
+
+const setScaleValue = function(scaleNumber){
+  if(scaleNumber < 25 ){scaleNumber = 25;}
+  if(scaleNumber > 100 ){scaleNumber = 100;}
+  scaleValue.value = `${scaleNumber}%`;
+  scaleSmaller.style.pointerEvents = 'auto';
+  scaleBigger.style.pointerEvents = 'auto';
+  if(scaleNumber === 25){
+    scaleSmaller.style.pointerEvents = 'none';
+  }
+  if(scaleNumber === 100){
+    scaleBigger.style.pointerEvents = 'none';
+  }
+};
+
+scaleSmaller.addEventListener('click', ()=> {
+  setScaleValue(parseInt(scaleValue.value, 10) - 25);
+  pictureTransform();
+});
+
+scaleBigger.addEventListener('click', ()=> {
+  setScaleValue(parseInt(scaleValue.value, 10) + 25);
+  pictureTransform();
+});
+
+
 // Применение эффектов
-const setEffect = function(evt ){
+const setEffect = function(value ){
 
   sliderBar.style.display = 'block';
   const re = /effects__preview--[\w-]+/g;
   const resetPictureClassName = picture.className.replace(re, '');
   picture.className = resetPictureClassName;
-  picture.classList.add(`effects__preview--${evt.target.value}`);
+  picture.classList.add(`effects__preview--${value}`);
 
   if(sliderElement.noUiSlider !== undefined){
     sliderElement.noUiSlider.destroy();
@@ -66,7 +109,7 @@ const setEffect = function(evt ){
   let sliderElementsOptions = null;
   let sliderUpdateOptions = null;
 
-  switch (evt.target.value) {
+  switch (value) {
     case 'chrome':
       sliderElementsOptions = {
         range: {
@@ -77,7 +120,7 @@ const setEffect = function(evt ){
         step: .1,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(_, handle, unencoded){
+      sliderUpdateOptions = function(__, handle, unencoded){
         valueElement.value = unencoded[handle];
         picture.style.filter = `grayscale(${valueElement.value})`;
       };
@@ -92,7 +135,7 @@ const setEffect = function(evt ){
         step: .1,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(_, handle, unencoded){
+      sliderUpdateOptions = function(__, handle, unencoded){
         valueElement.value = unencoded[handle];
         picture.style.filter = `sepia(${valueElement.value})`;
       };
@@ -107,7 +150,7 @@ const setEffect = function(evt ){
         step: 1,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(_, handle, unencoded){
+      sliderUpdateOptions = function(__, handle, unencoded){
         valueElement.value = unencoded[handle];
         picture.style.filter = `invert(${valueElement.value}%)`;
       };
@@ -122,7 +165,7 @@ const setEffect = function(evt ){
         step: .1,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(_, handle, unencoded){
+      sliderUpdateOptions = function(__, handle, unencoded){
         valueElement.value = unencoded[handle];
         picture.style.filter = `blur(${valueElement.value}px)`;
       };
@@ -137,7 +180,7 @@ const setEffect = function(evt ){
         step: .1,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(_, handle, unencoded){
+      sliderUpdateOptions = function(__, handle, unencoded){
         valueElement.value = unencoded[handle];
         picture.style.filter = `brightness(${valueElement.value})`;
       };
@@ -156,35 +199,54 @@ const setEffect = function(evt ){
 
 sliderBar.style.display = 'none';
 for(let idx = 0; idx < effectSelectors.length; idx++ ){
-  effectSelectors[idx].addEventListener('change', setEffect);
+  effectSelectors[idx].addEventListener('change', (evt)=>{
+    setEffect(evt.target.value);
+  });
 }
+
+function closeForm(){
+  document.querySelector('body').classList.remove('modal-open');
+  document.querySelector('.img-upload__overlay').classList.add('hidden');
+  // eslint-disable-next-line no-use-before-define
+  document.removeEventListener('keydown', onFormEscKeyDown);
+  form.reset();
+  setEffect('none');
+  setScaleValue(defaultScaleNumber);
+  pictureTransform();
+}
+
+const onFormEscKeyDown = (evt)=> {
+  if (isEscEvent(evt) && document.activeElement !== hashTagInput && document.activeElement !== hashTagComment){
+    evt.preventDefault();
+    closeForm();
+  }
+};
 
 imageSelect.addEventListener('change', () =>{
   document.querySelector('body').classList.add('modal-open');
   document.querySelector('.img-upload__overlay').classList.remove('hidden');
-  scale();
   defaultEffectSelector.checked = true;
-  function closeForm(){
-    document.querySelector('body').classList.remove('modal-open');
-    document.querySelector('.img-upload__overlay').classList.add('hidden');
-    // eslint-disable-next-line no-use-before-define
-    document.removeEventListener('keydown', onFormEscKeyDown);
-    form.reset();
-  }
+  setScaleValue(defaultScaleNumber);
+  pictureTransform();
 
   const pictureFormClose = document.querySelector('.img-upload__cancel');
   pictureFormClose.addEventListener('click', ()=> {
     closeForm();
   });
-
-  const onFormEscKeyDown = (evt)=> {
-    if (isEscEvent(evt) && document.activeElement !== hashTagInput && document.activeElement !== hashTagComment){
-      evt.preventDefault();
-      closeForm();
-    }
-  };
-
   document.addEventListener('keydown', onFormEscKeyDown);
+});
+
+const sendForm = createFetch(form.action, form.method, ()=>{
+  closeForm();
+  showMessagePopup(successMessage);
+},()=>{
+  showMessagePopup(errorMessage);
+});
+
+form.addEventListener('submit', (evt) =>{
+  evt.preventDefault();
+  const formData = new FormData(evt.target);
+  sendForm(formData);
 });
 
 const hashTagRegularExpr = {
