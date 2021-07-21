@@ -74,6 +74,6 @@ filterRandom.addEventListener('click', ()=>{
 });
 filterDiscussed.addEventListener('click',()=>{
   const clonePhotos = [...photos];
-  clonePhotos.sort((el1 ,el2)=>el1.comments.length - el2.comments.length);
+  clonePhotos.sort((el1 ,el2)=>el2.comments.length - el1.comments.length);
   renderPicturesThrottle(clonePhotos);
 });
