@@ -1,13 +1,46 @@
 import { isEscEvent} from './util.js';
 import { createFetch } from './create-fetch.js';
 
+const DEFAULT_SCALE_NUMBER = 100;
+
+const FILTER_CHROME_RANGE_MIN = 0;
+const FILTER_CHROME_RANGE_MAX = 1;
+const FILTER_CHROME_START = 1;
+const FILTER_CHROME_STEP = .1;
+
+const FILTER_SEPIA_RANGE_MIN = 0;
+const FILTER_SEPIA_RANGE_MAX = 1;
+const FILTER_SEPIA_START = 1;
+const FILTER_SEPIA_STEP = .1;
+
+const FILTER_MARVIN_RANGE_MIN = 0;
+const FILTER_MARVIN_RANGE_MAX = 100;
+const FILTER_MARVIN_START = 100;
+const FILTER_MARVIN_STEP = 1;
+
+const FILTER_PHOBOS_RANGE_MIN = 0;
+const FILTER_PHOBOS_RANGE_MAX = 3;
+const FILTER_PHOBOS_START = 3;
+const FILTER_PHOBOS_STEP = .1;
+
+const FILTER_HEAT_RANGE_MIN = 1;
+const FILTER_HEAT_RANGE_MAX = 3;
+const FILTER_HEAT_START = 3;
+const FILTER_HEAT_STEP = .1;
+
+const MIN_SCALE_VALUE = 25;
+const MAX_SCALE_VALUE = 100;
+const SCALE_STEP =25;
+
+const NOTATION =10;
+const FACTOR = .01;
+
 const imageSelect = document.querySelector('#upload-file');
 const form = document.querySelector('.img-upload__form');
 const hashTagInput = form.querySelector('.text__hashtags');
 const hashTagComment = form.querySelector('.text__description');
 const picture =form.querySelector('.img-upload__preview');
 
-const defaultScaleNumber = 100;
 const scaleSmaller = form.querySelector('.scale__control--smaller');
 const scaleBigger = form.querySelector('.scale__control--bigger');
 const scaleValue = form.querySelector('.scale__control--value');
@@ -23,14 +56,21 @@ const valueElement = document.querySelector('.effect-level__value');
 const errorMessage = document.querySelector('#error').content;
 const successMessage = document.querySelector('#success').content;
 
-const showMessagePopup = function (messageTemplate){
+const hashTagRegularExpr = {
+  minLength: 2,
+  maxLength: 20,
+  amount: 5,
+  re: /^#[\p{L}\d]{1,19}$/u,
+};
+
+const showMessagePopup = (messageTemplate) => {
   const element = document.createElement('div');
   element.append(messageTemplate.cloneNode(true));
   document.querySelector('body').append(element);
   const messageWindow = element.firstElementChild;
   const close = element.querySelector('button');
 
-  const removeMessageWindow = (evt)=> {
+  const popupCloseHandler = (evt)=> {
     const messageWindowInner = messageWindow.firstElementChild;
     if(!messageWindowInner.contains(evt.target)){
       messageWindow.remove();
@@ -39,7 +79,7 @@ const showMessagePopup = function (messageTemplate){
     }
   };
 
-  const removeMessageWindowByEsc = (evt)=>{
+  const popupCloseByEscHandler = (evt)=>{
     if (isEscEvent(evt)){
       messageWindow.remove();
       // eslint-disable-next-line no-use-before-define
@@ -52,48 +92,47 @@ const showMessagePopup = function (messageTemplate){
     // eslint-disable-next-line no-use-before-define
     closePopup();
   });
-  document.addEventListener('keydown', removeMessageWindowByEsc);
-  document.addEventListener('click', removeMessageWindow);
+  document.addEventListener('keydown', popupCloseByEscHandler);
+  document.addEventListener('click', popupCloseHandler);
 
-  function closePopup(){
-    document.removeEventListener('click', removeMessageWindow);
-    document.removeEventListener('keydown', removeMessageWindowByEsc);
-  }
+  const closePopup = () => {
+    document.removeEventListener('click', popupCloseHandler);
+    document.removeEventListener('keydown', popupCloseByEscHandler);
+  };
 };
-
 
 // Транформация изображения
-const pictureTransform = function (){
-  picture.style.transform = `scale(${parseInt(scaleValue.value, 10)*.01})`;
+const pictureTransform =  () => {
+  picture.style.transform = `scale(${parseInt(scaleValue.value, NOTATION)*FACTOR})`;
 };
 
-const setScaleValue = function(scaleNumber){
-  if(scaleNumber < 25 ){scaleNumber = 25;}
-  if(scaleNumber > 100 ){scaleNumber = 100;}
+const setScaleValue = (scaleNumber) => {
+  if(scaleNumber < MIN_SCALE_VALUE ){scaleNumber = MIN_SCALE_VALUE;}
+  if(scaleNumber > MAX_SCALE_VALUE ){scaleNumber = MAX_SCALE_VALUE;}
   scaleValue.value = `${scaleNumber}%`;
   scaleSmaller.style.pointerEvents = 'auto';
   scaleBigger.style.pointerEvents = 'auto';
-  if(scaleNumber === 25){
+  if(scaleNumber === MIN_SCALE_VALUE){
     scaleSmaller.style.pointerEvents = 'none';
   }
-  if(scaleNumber === 100){
+  if(scaleNumber === MAX_SCALE_VALUE){
     scaleBigger.style.pointerEvents = 'none';
   }
 };
 
 scaleSmaller.addEventListener('click', ()=> {
-  setScaleValue(parseInt(scaleValue.value, 10) - 25);
+  setScaleValue(parseInt(scaleValue.value, NOTATION) - SCALE_STEP);
   pictureTransform();
 });
 
 scaleBigger.addEventListener('click', ()=> {
-  setScaleValue(parseInt(scaleValue.value, 10) + 25);
+  setScaleValue(parseInt(scaleValue.value, NOTATION) + SCALE_STEP);
   pictureTransform();
 });
 
 
 // Применение эффектов
-const setEffect = function(value ){
+const setEffect = (value) => {
 
   sliderBar.style.display = 'block';
   const re = /effects__preview--[\w-]+/g;
@@ -105,7 +144,6 @@ const setEffect = function(value ){
     sliderElement.noUiSlider.destroy();
   }
 
-
   let sliderElementsOptions = null;
   let sliderUpdateOptions = null;
 
@@ -113,14 +151,14 @@ const setEffect = function(value ){
     case 'chrome':
       sliderElementsOptions = {
         range: {
-          min:0,
-          max:1,
+          min:FILTER_CHROME_RANGE_MIN,
+          max:FILTER_CHROME_RANGE_MAX,
         },
-        start:1,
-        step: .1,
+        start:FILTER_CHROME_START,
+        step: FILTER_CHROME_STEP,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(__, handle, unencoded){
+      sliderUpdateOptions = (__, handle, unencoded) => {
         valueElement.value = unencoded[handle];
         picture.style.filter = `grayscale(${valueElement.value})`;
       };
@@ -128,14 +166,14 @@ const setEffect = function(value ){
     case 'sepia':
       sliderElementsOptions = {
         range: {
-          min:0,
-          max:1,
+          min:FILTER_SEPIA_RANGE_MIN,
+          max:FILTER_SEPIA_RANGE_MAX,
         },
-        start:1,
-        step: .1,
+        start:FILTER_SEPIA_START,
+        step: FILTER_SEPIA_STEP,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(__, handle, unencoded){
+      sliderUpdateOptions = (__, handle, unencoded) => {
         valueElement.value = unencoded[handle];
         picture.style.filter = `sepia(${valueElement.value})`;
       };
@@ -143,14 +181,14 @@ const setEffect = function(value ){
     case 'marvin':
       sliderElementsOptions = {
         range: {
-          min:0,
-          max:100,
+          min:FILTER_MARVIN_RANGE_MIN,
+          max:FILTER_MARVIN_RANGE_MAX,
         },
-        start:100,
-        step: 1,
+        start:FILTER_MARVIN_START,
+        step: FILTER_MARVIN_STEP,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(__, handle, unencoded){
+      sliderUpdateOptions = (__, handle, unencoded) => {
         valueElement.value = unencoded[handle];
         picture.style.filter = `invert(${valueElement.value}%)`;
       };
@@ -158,14 +196,14 @@ const setEffect = function(value ){
     case 'phobos':
       sliderElementsOptions = {
         range: {
-          min:0,
-          max:3,
+          min:FILTER_PHOBOS_RANGE_MIN,
+          max:FILTER_PHOBOS_RANGE_MAX,
         },
-        start:3,
-        step: .1,
+        start:FILTER_PHOBOS_START,
+        step: FILTER_PHOBOS_STEP,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(__, handle, unencoded){
+      sliderUpdateOptions = (__, handle, unencoded) => {
         valueElement.value = unencoded[handle];
         picture.style.filter = `blur(${valueElement.value}px)`;
       };
@@ -173,14 +211,14 @@ const setEffect = function(value ){
     case 'heat':
       sliderElementsOptions = {
         range: {
-          min:1,
-          max:3,
+          min:FILTER_HEAT_RANGE_MIN,
+          max:FILTER_HEAT_RANGE_MAX,
         },
-        start:3,
-        step: .1,
+        start:FILTER_HEAT_START,
+        step: FILTER_HEAT_STEP,
         connect: 'lower',
       };
-      sliderUpdateOptions = function(__, handle, unencoded){
+      sliderUpdateOptions = (__, handle, unencoded) => {
         valueElement.value = unencoded[handle];
         picture.style.filter = `brightness(${valueElement.value})`;
       };
@@ -204,16 +242,16 @@ for(let idx = 0; idx < effectSelectors.length; idx++ ){
   });
 }
 
-function closeForm(){
+const closeForm = () => {
   document.querySelector('body').classList.remove('modal-open');
   document.querySelector('.img-upload__overlay').classList.add('hidden');
   // eslint-disable-next-line no-use-before-define
   document.removeEventListener('keydown', onFormEscKeyDown);
   form.reset();
   setEffect('none');
-  setScaleValue(defaultScaleNumber);
+  setScaleValue(DEFAULT_SCALE_NUMBER);
   pictureTransform();
-}
+};
 
 const onFormEscKeyDown = (evt)=> {
   if (isEscEvent(evt) && document.activeElement !== hashTagInput && document.activeElement !== hashTagComment){
@@ -226,7 +264,7 @@ imageSelect.addEventListener('change', () =>{
   document.querySelector('body').classList.add('modal-open');
   document.querySelector('.img-upload__overlay').classList.remove('hidden');
   defaultEffectSelector.checked = true;
-  setScaleValue(defaultScaleNumber);
+  setScaleValue(DEFAULT_SCALE_NUMBER);
   pictureTransform();
 
   const pictureFormClose = document.querySelector('.img-upload__cancel');
@@ -240,6 +278,7 @@ const sendForm = createFetch(form.action, form.method, ()=>{
   closeForm();
   showMessagePopup(successMessage);
 },()=>{
+  closeForm();
   showMessagePopup(errorMessage);
 });
 
@@ -248,13 +287,6 @@ form.addEventListener('submit', (evt) =>{
   const formData = new FormData(evt.target);
   sendForm(formData);
 });
-
-const hashTagRegularExpr = {
-  minLength: 2,
-  maxLength: 20,
-  amount: 5,
-  re: /^#[\p{L}\d]{1,19}$/u,
-};
 
 const checkActions = [
   {

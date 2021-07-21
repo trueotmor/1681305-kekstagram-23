@@ -4,6 +4,10 @@ import { showAlert } from './util.js';
 import { getRndArr } from './util.js';
 import { throttle } from './utils/throttle.js';
 
+const THROTTLE_TIMEOUT = 500;
+const MIN_RANDOM_PHOTOS = 10;
+const MAX_RANDOM_PHOTOS = 10;
+
 const filters = document.querySelector('.img-filters');
 const filterDefault = filters.querySelector('#filter-default');
 const filterRandom = filters.querySelector('#filter-random');
@@ -20,7 +24,7 @@ const picturesContainer = document.querySelector('.pictures');
 let photos = [];
 
 // eslint-disable-next-line no-shadow
-const renderPictures = function(photos){
+const renderPictures = (photos) => {
   const fragment = document.createDocumentFragment();
   let pictures = picturesContainer.querySelectorAll('.picture');
   pictures.forEach((item)=> {
@@ -62,14 +66,14 @@ for(let idx=0; idx < allFilters.length; idx++){
   });
 }
 
-const renderPicturesThrottle = throttle(renderPictures, 500);
+const renderPicturesThrottle = throttle(renderPictures, THROTTLE_TIMEOUT);
 
 filterDefault.addEventListener('click', ()=>{
   renderPicturesThrottle(photos);
 
 });
 filterRandom.addEventListener('click', ()=>{
-  renderPicturesThrottle(getRndArr(photos, 10, 10));
+  renderPicturesThrottle(getRndArr(photos, MAX_RANDOM_PHOTOS, MIN_RANDOM_PHOTOS));
 
 });
 filterDiscussed.addEventListener('click',()=>{

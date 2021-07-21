@@ -1,6 +1,6 @@
 import { isEscEvent } from './util.js';
 
-const getBigPicture = function (picture) {
+const getBigPicture = (picture) => {
   const bigPicture = document.querySelector('.big-picture');
   const bigPictureClose = bigPicture.querySelector('.big-picture__cancel');
   const socialComments = document.querySelector('.social__comments');
@@ -9,7 +9,7 @@ const getBigPicture = function (picture) {
   socialComments.innerHTML = '';
 
 
-  const render = function (){
+  const render = () => {
     showMore.classList.remove('visually-hidden');
     let renderComments = bigPicture.querySelectorAll('.social__comment').length;
     const newComment = comments.slice(renderComments, renderComments+5).map( (comment) => `<li class="social__comment">
@@ -34,12 +34,12 @@ const getBigPicture = function (picture) {
     }
   };
 
-  function closeBigPicture(){
+  const closeBigPicture = () => {
     bigPicture.classList.add('hidden');
     document.querySelector('body').classList.remove('modal-open');
     document.removeEventListener('keydown', onPopupEscKeyDown, {once:true});
     showMore.removeEventListener('click', render);
-  }
+  };
 
   bigPictureClose.addEventListener('click', ()=> {
     bigPicture.classList.add('hidden');
